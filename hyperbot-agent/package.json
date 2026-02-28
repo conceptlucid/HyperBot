@@ -1,0 +1,25 @@
+{
+  "name": "hyperbot-agent",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "HyperBot agent - controls computers remotely",
+  "main": "src/index.ts",
+  "scripts": {
+    "start": "bun run src/index.ts",
+    "dev": "bun run --watch src/index.ts"
+  },
+  "dependencies": {
+    "chokidar": "^3.5.3",
+    "glob": "^10.3.0",
+    "systeminformation": "^5.21.0",
+    "uuid": "^9.0.0",
+    "ws": "^8.14.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/uuid": "^9.0.0",
+    "@types/ws": "^8.5.0",
+    "bun-types": "^1.0.0",
+    "tsx": "^4.21.0"
+  }
+}
