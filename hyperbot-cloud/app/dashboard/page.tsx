@@ -22,7 +22,24 @@ export default function Dashboard() {
     { role: 'system', content: 'Welcome to HyperBot! Select a machine to get started.' }
   ])
   const [loading, setLoading] = useState(false)
+  const [aiReady, setAiReady] = useState(false)
   const wsRef = useRef<WebSocket | null>(null)
+
+  // Check AI config
+  useEffect(() => {
+    fetch('http://localhost:3001/api/config')
+      .then(r => r.json())
+      .then(config => {
+        setAiReady(config.hasOpenRouter || config.hasOpenAI || config.hasAnthropic)
+        if (!config.hasOpenRouter && !config.hasOpenAI && !config.hasAnthropic) {
+          setMessages(m => [...m, { 
+            role: 'system', 
+            content: 'AI not configured. Using OpenRouter free model by default.' 
+          }])
+        }
+      })
+      .catch(() => {})
+  }, [])
 
   // Connect to WebSocket
   useEffect(() => {
@@ -80,6 +97,32 @@ export default function Dashboard() {
         setLoading(false)
         break
     }
+  }
+
+  const sendToAI = async () => {
+    if (!prompt.trim()) return
+
+    const userMessage = prompt
+    setMessages(m => [...m, { role: 'user', content: userMessage }])
+    setLoading(true)
+    setPrompt('')
+
+    try {
+      const res = await fetch('http://localhost:3001/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          messages: [...messages, { role: 'user', content: userMessage }],
+          agentId: selectedAgent
+        })
+      })
+
+      const data = await res.json()
+      setMessages(m => [...m, { role: 'assistant', content: data.response }])
+    } catch (e) {
+      setMessages(m => [...m, { role: 'assistant', content: 'Failed to connect to AI' }])
+    }
+    setLoading(false)
   }
 
   const sendCommand = async () => {
@@ -159,6 +202,16 @@ export default function Dashboard() {
           Hyper<span style={{ color: '#00d4ff' }}>Bot</span>
         </h1>
         <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+          {aiReady && (
+            <span style={{ 
+              background: '#00ff8833', 
+              padding: '4px 12px', 
+              borderRadius: '12px',
+              fontSize: '0.8rem'
+            }}>
+              AI Ready
+            </span>
+          )}
           <span style={{ color: '#888' }}>dashboard</span>
           <div style={{ width: '32px', height: '32px', background: '#222', borderRadius: '50%' }} />
         </div>
@@ -177,16 +230,16 @@ export default function Dashboard() {
             </p>
           )}
 
-          {agents.map(agent => (
+          {agents.map(Agent => (
             <div
-              key={agent.id}
-              onClick={() => setSelectedAgent(agent.id)}
+              key={Agent.id}
+              onClick={() => setSelectedAgent(Agent.id)}
               style={{
                 padding: '16px',
                 marginBottom: '10px',
-                background: selectedAgent === agent.id ? '#111' : '#0a0a0a',
+                background: selectedAgent === Agent.id ? '#111' : '#0a0a0a',
                 borderRadius: '12px',
-                border: selectedAgent === agent.id ? '1px solid #00d4ff' : '1px solid transparent',
+                border: selectedAgent === Agent.id ? '1px solid #00d4ff' : '1px solid transparent',
                 cursor: 'pointer'
               }}
             >
@@ -197,10 +250,10 @@ export default function Dashboard() {
                   borderRadius: '50%',
                   background: '#00ff88'
                 }} />
-                <span style={{ fontWeight: '500' }}>{agent.name}</span>
+                <span style={{ fontWeight: '500' }}>{Agent.name}</span>
               </div>
               <p style={{ fontSize: '0.8rem', color: '#555', marginTop: '4px' }}>
-                {agent.capabilities?.join(', ') || 'Connected'}
+                {Agent.capabilities?.join(', ') || 'Connected'}
               </p>
             </div>
           ))}
@@ -247,7 +300,7 @@ export default function Dashboard() {
                   </div>
                 ))}
                 {loading && (
-                  <div style={{ color: '#00d4ff' }}>⟳ Running command...</div>
+                  <div style={{ color: '#00d4ff' }}>⟳ Processing...</div>
                 )}
               </div>
 
@@ -257,8 +310,8 @@ export default function Dashboard() {
                   type="text"
                   value={prompt}
                   onChange={e => setPrompt(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && !loading && sendCommand()}
-                  placeholder="Tell HyperBot what to do..."
+                  onKeyDown={e => e.key === 'Enter' && !loading && (aiReady ? sendToAI() : sendCommand())}
+                  placeholder={aiReady ? "Chat with AI or type a command..." : "Type a command..."}
                   disabled={loading}
                   style={{
                     flex: 1,
@@ -272,7 +325,7 @@ export default function Dashboard() {
                   }}
                 />
                 <button
-                  onClick={sendCommand}
+                  onClick={aiReady ? sendToAI : sendCommand}
                   disabled={loading || !prompt.trim()}
                   style={{
                     padding: '16px 32px',

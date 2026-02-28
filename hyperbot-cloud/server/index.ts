@@ -1,5 +1,6 @@
 import { createServer } from 'http'
 import { WebSocketServer, WebSocket } from 'ws'
+import { chat, setApiKey, getConfig } from './ai.js'
 
 interface Agent {
   ws: WebSocket
@@ -34,6 +35,48 @@ const server = createServer((req, res) => {
   if (req.url === '/health') {
     res.writeHead(200, { 'Content-Type': 'application/json' })
     res.end(JSON.stringify({ status: 'ok', agents: agents.size }))
+    return
+  }
+
+  // AI Config endpoint
+  if (req.url === '/api/config' && req.method === 'GET') {
+    const config = getConfig()
+    res.writeHead(200, { 'Content-Type': 'application/json' })
+    res.end(JSON.stringify(config))
+    return
+  }
+
+  // AI Chat endpoint
+  if (req.url === '/api/chat' && req.method === 'POST') {
+    let body = ''
+    req.on('data', chunk => body += chunk)
+    req.on('end', async () => {
+      const { messages, model, agentId } = JSON.parse(body)
+      
+      // Add system context about the agent
+      const contextMessages = [
+        ...messages,
+        { role: 'user', content: agentId ? `(Connected to agent: ${agentId})` : '' }
+      ]
+
+      const result = await chat(contextMessages, model)
+      
+      res.writeHead(200, { 'Content-Type': 'application/json' })
+      res.end(JSON.stringify(result))
+    })
+    return
+  }
+
+  // Set API key
+  if (req.url === '/api/keys' && req.method === 'POST') {
+    let body = ''
+    req.on('data', chunk => body += chunk)
+    req.on('end', () => {
+      const { provider, key } = JSON.parse(body)
+      setApiKey(provider, key)
+      res.writeHead(200, { 'Content-Type': 'application/json' })
+      res.end(JSON.stringify({ success: true }))
+    })
     return
   }
 
@@ -147,7 +190,6 @@ function handleMessage(ws: WebSocket, msg: any, deviceId: string) {
 
     case 'result':
       console.log(`📬 Result for ${msg.id}:`, msg.status)
-      // In production, notify waiting HTTP request
       break
   }
 }
@@ -166,4 +208,5 @@ server.listen(PORT, () => {
   console.log(`🚀 HyperBot Cloud Server running on port ${PORT}`)
   console.log(`   WebSocket: ws://localhost:${PORT}/ws/agent`)
   console.log(`   REST API: http://localhost:${PORT}/api/agents`)
+  console.log(`   AI Chat: http://localhost:${PORT}/api/chat`)
 })
