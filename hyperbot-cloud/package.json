@@ -16,7 +16,8 @@
     "lucide-react": "^0.300",
     "ws": "^8.14.0",
     "openai": "^4.28.0",
-    "anthropic": "^0.18.0"
+    "discord.js": "^14.14.0",
+    "node-telegram-bot-api": "^0.64.0"
   },
   "devDependencies": {
     "typescript": "^5",
