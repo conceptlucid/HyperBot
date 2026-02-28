@@ -1,25 +1,26 @@
 # 🤖 HyperBot
 
-Your personal AI that controls any computer. Like Manus, but open and flexible.
+Your personal AI that controls any computer from anywhere.
 
-## ✨ Features
+> Think of it like Manus — but open, flexible, and you run it yourself.
 
-- 🖥️ **Full Computer Control** — Screen, mouse, keyboard, files, terminal
-- ☁️ **Cloud Connected** — Control your machines from anywhere
-- 📱 **Any Platform** — macOS, Linux, Windows
-- 🔗 **MCP Integrations** — Zapier, YouTube, Gmail, and more
-- 🔒 **Secure** — API key auth, command whitelisting
+## ✨ Why HyperBot?
 
-## 🚀 Quick Start
+- 🖥️ **Control Any Computer** — Screen, mouse, keyboard, files, terminal — right from your browser
+- ☁️ **Cloud-Powered** — Access your machines from anywhere via web dashboard
+- 🔒 **Your Data, Your Servers** — No third-party servers. You own everything.
+- 🔗 **Integrations Ready** — Zapier, Gmail, YouTube, and more via MCP
+- 🚀 **One-Line Install** — Get running in seconds
 
-### 1. Install the Agent
+## 🚀 Get Started
+
+### Step 1: Install
 
 ```bash
-# On the machine you want to control:
 curl -sL https://hyperbot.sh | bash
 ```
 
-### 2. Configure
+### Step 2: Configure
 
 Edit `~/.hyperbot/config.json`:
 
@@ -31,50 +32,44 @@ Edit `~/.hyperbot/config.json`:
 }
 ```
 
-### 3. Run
+### Step 3: Run
 
 ```bash
 ~/.hyperbot/start.sh
 ```
 
-### 4. Control!
+### Step 4: Control
 
-Visit **https://myhyperbot.com/dashboard** to control your machine.
+Open **https://myhyperbot.com/dashboard** and start controlling your machine.
 
-## 📡 Available Commands
+## 💬 What Can You Say?
 
-| Command | Description |
+| Example | What It Does |
 |---------|-------------|
-| `screenshot` | Take a screenshot |
-| `system info` | Get CPU, memory, disk info |
-| `ls /path` | List files |
-| `!command` | Run terminal command |
-| `read file` | Read file contents |
-| `write file` | Write to a file |
+| `screenshot` | Takes a screenshot |
+| `system info` | Shows CPU, memory, disk |
+| `ls /home` | Lists files in /home |
+| `!pwd` | Runs `pwd` in terminal |
+| `read /etc/hostname` | Reads a file |
 
-## 🏗️ Architecture
+## 🏗️ The Stack
 
-- **hyperbot-agent** — Runs on machines, receives commands via WebSocket
-- **hyperbot-cloud** — Next.js web app (dashboard + API)
+- **Agent** — Lightweight Node.js process on your machine
+- **Cloud** — Next.js web app (deploy to Vercel)
+- **Connection** — WebSocket for real-time control
 
-## 🔧 Development
+## 🔧 Run Locally
 
 ```bash
-# Clone
-git clone https://github.com/conceptlucid/HyperBot.git
-cd HyperBot
-
-# Run cloud locally
+# Cloud
 cd hyperbot-cloud
-npm install
-npm run dev
+npm install && npm run dev
 
-# Run agent locally
-cd ../hyperbot-agent
-npm install
-npm start
+# Agent (in another terminal)
+cd hyperbot-agent
+npm install && npm start
 ```
 
 ## 📜 License
 
-MIT
+MIT — Go build something cool.
