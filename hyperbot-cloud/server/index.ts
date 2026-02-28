@@ -1,6 +1,7 @@
 import { createServer } from 'http'
 import { WebSocketServer, WebSocket } from 'ws'
 import { chat, setApiKey, getConfig } from './ai.js'
+import { detectInjection, validateCommand, sanitizeInput, checkRateLimit } from './security.js'
 
 interface Agent {
   ws: WebSocket
@@ -38,6 +39,15 @@ const server = createServer((req, res) => {
     return
   }
 
+  // Rate limit all API requests
+  const clientIp = req.socket.remoteAddress || 'unknown'
+  const rateCheck = checkRateLimit(clientIp, 100, 60000)
+  if (!rateCheck.allowed) {
+    res.writeHead(429)
+    res.end(JSON.stringify({ error: rateCheck.reason }))
+    return
+  }
+
   // AI Config endpoint
   if (req.url === '/api/config' && req.method === 'GET') {
     const config = getConfig()
@@ -53,13 +63,23 @@ const server = createServer((req, res) => {
     req.on('end', async () => {
       const { messages, model, agentId } = JSON.parse(body)
       
-      // Add system context about the agent
-      const contextMessages = [
-        ...messages,
-        { role: 'user', content: agentId ? `(Connected to agent: ${agentId})` : '' }
-      ]
+      // Sanitize input
+      const sanitizedMessages = messages.map((m: any) => ({
+        role: m.role,
+        content: sanitizeInput(m.content)
+      }))
+      
+      // Check for prompt injection
+      for (const msg of sanitizedMessages) {
+        const injection = detectInjection(msg.content)
+        if (injection.blocked) {
+          res.writeHead(400)
+          res.end(JSON.stringify({ error: injection.reason }))
+          return
+        }
+      }
 
-      const result = await chat(contextMessages, model)
+      const result = await chat(sanitizedMessages, model)
       
       res.writeHead(200, { 'Content-Type': 'application/json' })
       res.end(JSON.stringify(result))
@@ -67,15 +87,21 @@ const server = createServer((req, res) => {
     return
   }
 
-  // Set API key
+  // Set API key (rate limited)
   if (req.url === '/api/keys' && req.method === 'POST') {
     let body = ''
     req.on('data', chunk => body += chunk)
     req.on('end', () => {
       const { provider, key } = JSON.parse(body)
-      setApiKey(provider, key)
-      res.writeHead(200, { 'Content-Type': 'application/json' })
-      res.end(JSON.stringify({ success: true }))
+      // Sanitize key
+      if (key && key.length > 5) {
+        setApiKey(provider, key)
+        res.writeHead(200, { 'Content-Type': 'application/json' })
+        res.end(JSON.stringify({ success: true }))
+      } else {
+        res.writeHead(400)
+        res.end(JSON.stringify({ error: 'Invalid key' }))
+      }
     })
     return
   }
@@ -107,13 +133,22 @@ const server = createServer((req, res) => {
       }
 
       const { tool, args } = JSON.parse(body)
+      
+      // Validate command before execution
+      const validation = validateCommand(tool, args)
+      if (validation.blocked) {
+        res.writeHead(400)
+        res.end(JSON.stringify({ error: validation.reason }))
+        return
+      }
+
       const commandId = Date.now().toString()
 
       agent.ws.send(JSON.stringify({
         type: 'command',
         id: commandId,
-        tool,
-        args
+        tool: sanitizeInput(tool),
+        args: sanitizeInput(JSON.stringify(args))
       }))
 
       // Create session for this command
@@ -140,9 +175,16 @@ wss.on('connection', (ws, req) => {
   const apiKey = req.headers['authorization']?.replace('Bearer ', '')
   const deviceId = req.headers['x-device-id'] as string
 
-  // Simple auth (in production, validate against DB)
+  // Simple auth
   if (!apiKey || apiKey === 'undefined') {
     ws.close(4001, 'Unauthorized - API key required')
+    return
+  }
+
+  // Rate limit agent connections
+  const rateCheck = checkRateLimit(deviceId, 10, 60000)
+  if (!rateCheck.allowed) {
+    ws.close(4002, 'Rate limited')
     return
   }
 
@@ -209,4 +251,5 @@ server.listen(PORT, () => {
   console.log(`   WebSocket: ws://localhost:${PORT}/ws/agent`)
   console.log(`   REST API: http://localhost:${PORT}/api/agents`)
   console.log(`   AI Chat: http://localhost:${PORT}/api/chat`)
+  console.log(`   Security: Enabled`)
 })
