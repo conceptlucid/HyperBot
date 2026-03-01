@@ -15,11 +15,6 @@ interface Message {
   content: string
 }
 
-interface Command {
-  tool: string
-  args: Record<string, any>
-}
-
 const config: Config = {
   apiKeys: {
     openai: process.env.OPENAI_API_KEY || '',
@@ -30,55 +25,73 @@ const config: Config = {
   defaultModel: process.env.DEFAULT_MODEL || 'openrouter/meta-llama/Llama-3.2-90B-Vision-Free'
 }
 
-const SYSTEM_PROMPT = `You are HyperBot, an AI assistant that helps control a remote computer.
+// This is your personality and instructions
+const SYSTEM_PROMPT = `You are HyperBot — a helpful AI assistant that works on the user's computer.
 
-You have access to these tools:
-- screen.capture: Take a screenshot
-- mouse.move x, y: Move mouse
-- mouse.click button: Click (left, right, middle)
-- keyboard.type text: Type text
-- keyboard.hotkey keys: Press hotkey (e.g., "ctrl+c")
-- terminal.run command: Run a terminal command
-- files.read path: Read a file
-- files.list path: List files in directory
-- system.info: Get system information
+## Your Job
 
-When the user asks you to do something on the computer:
-1. First explain what you're going to do
-2. Run the appropriate command(s)
-3. Report the result
+The user chats with you naturally. You figure out what they need and do it. Simple.
 
-Always be helpful and concise.`
+## How You Help
+
+- **Find things** — Search files, emails, documents
+- **Do tasks** — Send emails, create events, run commands
+- **Answer questions** — Look up info, summarize, explain
+- **Automate** — Chain actions together
+
+## What You Can Do
+
+You have tools to:
+- Take screenshots
+- Move/click the mouse
+- Type text
+- Run terminal commands
+- Read/write files
+- Get system info
+
+## How You Work
+
+1. Understand what the user wants
+2. Break it into steps if needed
+3. Do the work quietly
+4. Tell them it's done (or ask if needed)
+
+## Rules
+
+- Be helpful but don't do anything harmful
+- If something might be destructive, ask first
+- Keep it simple — don't over-explain
+- Stay friendly and casual
+- When you run a command, tell them the result
+- If you take a screenshot, describe what you see
+
+## Important
+
+The user just chats with you. They don't type commands. You're the interface between them and the computer.`
 
 export async function chat(messages: Message[], model?: string): Promise<{
   response: string
-  commands?: Command[]
 }> {
   const selectedModel = model || config.defaultModel
-  const [provider, modelName] = selectedModel.split('/')
 
   try {
-    if (provider === 'openrouter' && config.apiKeys.openrouter) {
-      return await chatOpenRouter(messages, modelName || 'meta-llama/Llama-3.2-90B-Vision-Free', config.apiKeys.openrouter)
-    } else if (provider === 'openai' && config.apiKeys.openai) {
-      return await chatOpenAI(messages, modelName || 'gpt-4o', config.apiKeys.openai)
-    } else if (provider === 'anthropic' && config.apiKeys.anthropic) {
-      return await chatAnthropic(messages, modelName || 'claude-3-5-sonnet-20241022', config.apiKeys.anthropic)
+    if (config.apiKeys.openrouter) {
+      return await chatOpenRouter(messages, selectedModel.replace('openrouter/', ''), config.apiKeys.openrouter)
+    } else if (config.apiKeys.openai) {
+      return await chatOpenAI(messages, selectedModel.replace('openai/', ''), config.apiKeys.openai)
+    } else if (config.apiKeys.anthropic) {
+      return await chatAnthropic(messages, selectedModel.replace('anthropic/', ''), config.apiKeys.anthropic)
     } else {
-      // Default to OpenRouter with free model
       return await chatOpenRouter(messages, 'meta-llama/Llama-3.2-90B-Vision-Free', config.apiKeys.openrouter)
     }
   } catch (error: any) {
     return {
-      response: `Error: ${error.message}`
+      response: `Hmm, something went wrong: ${error.message}. Try again?`
     }
   }
 }
 
-async function chatOpenRouter(messages: Message[], model: string, apiKey: string): Promise<{
-  response: string
-  commands?: Command[]
-}> {
+async function chatOpenRouter(messages: Message[], model: string, apiKey: string) {
   const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -99,19 +112,16 @@ async function chatOpenRouter(messages: Message[], model: string, apiKey: string
 
   if (!response.ok) {
     const error = await response.text()
-    throw new Error(`OpenRouter error: ${error}`)
+    throw new Error(error)
   }
 
   const data = await response.json()
   return {
-    response: data.choices[0]?.message?.content || 'No response'
+    response: data.choices[0]?.message?.content || 'Got it!'
   }
 }
 
-async function chatOpenAI(messages: Message[], model: string, apiKey: string): Promise<{
-  response: string
-  commands?: Command[]
-}> {
+async function chatOpenAI(messages: Message[], model: string, apiKey: string) {
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -130,14 +140,11 @@ async function chatOpenAI(messages: Message[], model: string, apiKey: string): P
 
   const data = await response.json()
   return {
-    response: data.choices[0]?.message?.content || 'No response'
+    response: data.choices[0]?.message?.content || 'Got it!'
   }
 }
 
-async function chatAnthropic(messages: Message[], model: string, apiKey: string): Promise<{
-  response: string
-  commands?: Command[]
-}> {
+async function chatAnthropic(messages: Message[], model: string, apiKey: string) {
   const anthropic = new Anthropic({ apiKey })
   
   const formattedMessages = messages
@@ -151,16 +158,16 @@ async function chatAnthropic(messages: Message[], model: string, apiKey: string)
     model: model || 'claude-3-5-sonnet-20241022',
     system: SYSTEM_PROMPT,
     messages: formattedMessages,
-    max_tokens: 1024
+    max_tokens: 2048
   })
 
   return {
-    response: response.content[0]?.type === 'text' ? response.content[0].text : 'No response'
+    response: response.content[0]?.type === 'text' ? response.content[0].text : 'Got it!'
   }
 }
 
-export function setApiKey(provider: 'openai' | 'anthropic' | 'google' | 'openrouter', key: string) {
-  config.apiKeys[provider] = key
+export function setApiKey(provider: string, key: string) {
+  (config.apiKeys as any)[provider] = key
 }
 
 export function getConfig() {

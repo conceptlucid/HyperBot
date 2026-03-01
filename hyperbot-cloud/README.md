@@ -1,16 +1,15 @@
 # 🤖 HyperBot
 
-Your personal AI that controls any computer from anywhere.
+Your personal AI that works on your computer. Just chat — it handles the rest.
 
-> Think of it like Manus — but open, flexible, and you run it yourself.
+> Think of it like having a really smart assistant who can actually do things on your computer.
 
-## ✨ Why HyperBot?
+## ✨ What It Does
 
-- 🖥️ **Control Any Computer** — Screen, mouse, keyboard, files, terminal — right from your browser
-- ☁️ **Cloud-Powered** — Access your machines from anywhere via web dashboard
-- 🔒 **Your Data, Your Servers** — No third-party servers. You own everything.
-- 🔗 **Integrations Ready** — Zapier, Gmail, YouTube, and more via MCP
-- 🚀 **One-Line Install** — Get running in seconds
+- 💬 **Just Chat** — Tell HyperBot what to do in plain English
+- 🔒 **AI Decides** — The AI figures out the right commands (safer than manual control)
+- 🖥️ **Does The Work** — Opens apps, searches files, runs tasks
+- ☁️ **Works Anywhere** — Access from phone, laptop, Discord, Telegram
 
 ## 🚀 Get Started
 
@@ -20,56 +19,43 @@ Your personal AI that controls any computer from anywhere.
 curl -sL https://hyperbot.sh | bash
 ```
 
-### Step 2: Configure
+### Step 2: Chat
 
-Edit `~/.hyperbot/config.json`:
+Message HyperBot:
+- **Dashboard**: https://myhyperbot.com
+- **Discord**: Add the bot
+- **Telegram**: @yourbot
 
-```json
-{
-  "cloudUrl": "https://myhyperbot.com",
-  "deviceName": "my-computer",
-  "apiKey": "your-api-key"
-}
+### Step 3: Just Ask
+
+```
+You: "Find my presentation from last week and email it to John"
+HyperBot: "Sure! Found the file, attaching and sending now..."
 ```
 
-### Step 3: Run
+## 💬 Examples
 
-```bash
-~/.hyperbot/start.sh
-```
+| You Say | HyperBot Does |
+|---------|---------------|
+| "Find that PDF about the project" | Searches files, shows you the match |
+| "Book a meeting with Sarah tomorrow at 2" | Opens calendar, creates event |
+| "What's on my screen?" | Takes screenshot, describes it |
+| "Run the build" | Opens terminal, runs the command |
+| "Send the report to the team" | Compiles and emails it |
 
-### Step 4: Control
+## 🔒 Why Safer?
 
-Open **https://myhyperbot.com/dashboard** and start controlling your machine.
-
-## 💬 What Can You Say?
-
-| Example | What It Does |
-|---------|-------------|
-| `screenshot` | Takes a screenshot |
-| `system info` | Shows CPU, memory, disk |
-| `ls /home` | Lists files in /home |
-| `!pwd` | Runs `pwd` in terminal |
-| `read /etc/hostname` | Reads a file |
+- **AI validates commands** — Blocks dangerous operations automatically
+- **No direct terminal access** — User chats, AI executes
+- **Rate limited** — Prevents abuse
+- **Prompt injection protection** — Built-in safeguards
 
 ## 🏗️ The Stack
 
-- **Agent** — Lightweight Node.js process on your machine
-- **Cloud** — Next.js web app (deploy to Vercel)
-- **Connection** — WebSocket for real-time control
-
-## 🔧 Run Locally
-
-```bash
-# Cloud
-cd hyperbot-cloud
-npm install && npm run dev
-
-# Agent (in another terminal)
-cd hyperbot-agent
-npm install && npm start
-```
+- **Agent** — Lightweight process on your machine
+- **Cloud** — Next.js web + AI
+- **Channels** — Web, Discord, Telegram
 
 ## 📜 License
 
-MIT — Go build something cool.
+MIT

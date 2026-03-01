@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 
-export default function Landing() {
+export default function Campaign() {
   const [email, setEmail] = useState('')
   const [submitted, setSubmitted] = useState(false)
 
@@ -11,7 +11,6 @@ export default function Landing() {
     e.preventDefault()
     if (email) {
       setSubmitted(true)
-      // Here you'd send to your backend/email service
     }
   }
 
@@ -35,7 +34,7 @@ export default function Landing() {
       }}>
         {/* Logo */}
         <div style={{ marginBottom: '40px' }}>
-          <svg width="120" height="120" viewBox="0 0 400 400">
+          <svg width="100" height="100" viewBox="0 0 400 400">
             <defs>
               <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" style="stop-color:#00d4ff;stop-opacity:1" />
@@ -51,11 +50,6 @@ export default function Landing() {
             <rect x="155" y="190" width="90" height="20" rx="10" fill="#00d4ff"/>
             <line x1="200" y1="100" x2="200" y2="60" stroke="#0a0a0a" strokeWidth="8"/>
             <circle cx="200" cy="50" r="15" fill="#00d4ff"/>
-            <rect x="80" y="260" width="240" height="100" rx="10" fill="#0a0a0a" stroke="#00d4ff" strokeWidth="4"/>
-            <rect x="90" y="270" width="220" height="80" fill="#111"/>
-            <line x1="100" y1="290" x2="180" y2="290" stroke="#00d4ff" strokeWidth="3"/>
-            <line x1="100" y1="310" x2="220" y2="310" stroke="#00d4ff" strokeWidth="3"/>
-            <line x1="100" y1="330" x2="160" y2="330" stroke="#00ff88" strokeWidth="3"/>
           </svg>
         </div>
 
@@ -64,7 +58,7 @@ export default function Landing() {
         </h1>
         
         <p style={{ fontSize: '1.3rem', color: '#888', marginBottom: '30px', maxWidth: '500px' }}>
-          Your personal AI that controls any computer. From anywhere.
+          Your personal AI that works on your computer. Just chat — it handles the rest.
         </p>
 
         {/* CTA */}
@@ -118,10 +112,9 @@ export default function Landing() {
         {/* Features */}
         <div style={{ display: 'flex', gap: '30px', flexWrap: 'wrap', justifyContent: 'center', marginTop: '40px' }}>
           {[
-            { icon: '🖥️', title: 'Full Control', desc: 'Mouse, keyboard, screen' },
-            { icon: '☁️', title: 'Cloud Powered', desc: 'Access from anywhere' },
-            { icon: '🤖', title: 'AI Powered', desc: 'Natural conversations' },
-            { icon: '🔒', title: 'Secure', desc: 'Your data stays yours' }
+            { icon: '💬', title: 'Just Chat', desc: 'Tell it what to do' },
+            { icon: '🔒', title: 'AI Powered', desc: 'Safer than manual' },
+            { icon: '📱', title: 'Anywhere', desc: 'Web, Discord, Telegram' }
           ].map((f, i) => (
             <div key={i} style={{
               padding: '20px',
