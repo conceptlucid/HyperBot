@@ -212,6 +212,12 @@ class HyperBotAgent {
         case 'terminal.run':
           result = await Terminal.run(args?.command || '', args?.timeout || 30000)
           break
+        case 'code.run':
+          result = await Terminal.runCode(args?.code || '', args?.language, args?.timeout || 30000)
+          break
+        case 'code.languages':
+          result = { languages: Terminal.getSupportedLanguages() }
+          break
         case 'files.read':
           result = Files.read(args?.path || '')
           break
