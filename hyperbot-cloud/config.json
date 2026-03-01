@@ -4,7 +4,16 @@
     "openai": "",
     "anthropic": "",
     "google": "",
-    "openrouter": "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"
+    "openrouter": "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",
+    "mistral": "",
+    "perplexity": "",
+    "cohere": "",
+    "azure": "",
+    "minimax": "",
+    "kimi": "",
+    "xai": "",
+    "deepseek": "",
+    "together": ""
   },
   "defaultModel": "openrouter/meta-llama/Llama-3.2-90B-Vision-Free"
 }
