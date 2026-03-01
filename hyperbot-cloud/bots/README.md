@@ -1,36 +1,67 @@
-# Running Bots
+# Bots
 
-## Discord Bot
+Run these alongside the main server to connect HyperBot to different platforms.
+
+## Setup
 
 ```bash
-# Set environment variables
-export DISCORD_BOT_TOKEN=your-bot-token
-export DISCORD_CHANNEL_ID=your-channel-id
-export DISCORD_ALLOWED_SERVERS=server1,server2
+npm install
+```
 
-# Run
+## Discord
+
+```bash
+export DISCORD_BOT_TOKEN=your-token
 npx tsx bots/discord.ts
 ```
 
-## Telegram Bot
+## Telegram
 
 ```bash
-# Set environment variables
-export TELEGRAM_BOT_TOKEN=your-bot-token
-export TELEGRAM_ALLOWED_USERS=user1,user2
-
-# Run
+export TELEGRAM_BOT_TOKEN=your-token
 npx tsx bots/telegram.ts
+```
+
+## Slack
+
+```bash
+export SLACK_BOT_TOKEN=xoxb-...
+export SLACK_SIGNING_SECRET=your-secret
+npx tsx bots/slack.ts
+```
+
+## WhatsApp
+
+```bash
+# Requires QR code auth (run locally)
+export QR_CODE=true
+npx tsx bots/whatsapp.ts
+```
+
+## Signal
+
+```bash
+export SIGNAL_BOT_TOKEN=your-token
+npx tsx bots/signal.ts
 ```
 
 ## Environment Variables
 
-| Variable | Description |
-|----------|-------------|
-| `DISCORD_BOT_TOKEN` | Your Discord bot token |
-| `DISCORD_CHANNEL_ID` | Channel to respond in (optional) |
-| `DISCORD_ALLOWED_SERVERS` | Comma-separated server IDs (optional) |
-| `TELEGRAM_BOT_TOKEN` | Your Telegram bot token |
-| `TELEGRAM_ALLOWED_USERS` | Comma-separated user IDs (optional) |
+| Channel | Variables |
+|---------|-----------|
+| Discord | `DISCORD_BOT_TOKEN` |
+| Telegram | `TELEGRAM_BOT_TOKEN` |
+| Slack | `SLACK_BOT_TOKEN`, `SLACK_SIGNING_SECRET` |
+| WhatsApp | `QR_CODE=true` (local only) |
+| Signal | `SIGNAL_BOT_TOKEN` |
 
-The bots share the same AI config from the main server.
+## Run All
+
+```bash
+# Start main server
+npm run server &
+
+# Start bots (in separate terminals or background)
+npx tsx bots/discord.ts &
+npx tsx bots/telegram.ts &
+```
