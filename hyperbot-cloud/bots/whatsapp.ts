@@ -1,23 +1,17 @@
+// WhatsApp Bot for HyperBot
 import { Client, LocalAuth, Message } from 'whatsapp-web.js'
 
-const QR_CODE = process.env.QR_CODE === 'true'
-
-if (!QR_CODE) {
-  console.log('⚠️ WhatsApp not configured (set QR_CODE=true to enable)')
-  process.exit(0)
-}
-
 const client = new Client({
-  authStrategy: new LocalAuth({ dataPath: '.whatsapp-session' }),
-  puppeteer: { headless: true }
+  authStrategy: new LocalAuth({ dataPath: '.hyperbot-whatsapp-session' }),
+  puppeteer: { headless: true, args: ['--no-sandbox'] }
 })
 
 client.on('qr', (qr) => {
-  console.log('📱 WhatsApp QR Code:', qr)
+  console.log('📱 WhatsApp QR:', qr)
 })
 
 client.on('ready', () => {
-  console.log('🚀 HyperBot WhatsApp ready!')
+  console.log('✅ WhatsApp bot ready!')
 })
 
 client.on('message', async (message: Message) => {

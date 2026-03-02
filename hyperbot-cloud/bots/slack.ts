@@ -1,29 +1,19 @@
-import { App, SlackEvent, say } from '@slack/bolt'
-
-const SLACK_TOKEN = process.env.SLACK_BOT_TOKEN
-const SLACK_SIGNING_SECRET = process.env.SLACK_SIGNING_SECRET
-
-if (!SLACK_TOKEN || !SLACK_SIGNING_SECRET) {
-  console.log('⚠️ Slack not configured')
-  process.exit(0)
-}
+// Slack Bot for HyperBot
+import { App } from '@slack/bolt'
 
 const app = new App({
-  token: SLACK_TOKEN,
-  signingSecret: SLACK_SIGNING_SECRET
+  token: process.env.SLACK_BOT_TOKEN,
+  signingSecret: process.env.SLACK_SIGNING_SECRET
 })
 
-console.log('🚀 HyperBot Slack ready!')
-
 app.message(async ({ message, say }) => {
-  const slackMessage = message as SlackEvent
-  
-  if (slackMessage.subtype === 'bot_message') return
+  if ('subtype' in message && message.subtype === 'bot_message') return
+  const text = 'text' in message ? message.text : ''
   
   const { chat } = await import('../server/ai.js')
   
   try {
-    const result = await chat([{ role: 'user', content: slackMessage.text || '' }])
+    const result = await chat([{ role: 'user', content: text }])
     await say(result.response)
   } catch (error: any) {
     await say(`Error: ${error.message}`)
@@ -32,5 +22,5 @@ app.message(async ({ message, say }) => {
 
 ;(async () => {
   await app.start(3000)
-  console.log('Slack app running on port 3000')
+  console.log('✅ Slack bot running on port 3000')
 })()
